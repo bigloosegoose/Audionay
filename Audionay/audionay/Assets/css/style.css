@@ -1,0 +1,221 @@
+html, body{
+    overflow: hidden;
+    margin:0px;
+    height:100%;
+    background-image: url(winxp.jpg);
+    overscroll-behavior: none;
+}
+
+
+body{
+    display: grid;
+    place-items: center;
+    background-color: grey;
+    background-size: cover;
+    user-select: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+}
+
+.audioPlayerContainer{
+    position: relative;
+    filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.5));
+
+    border-right: 3px solid #0055E7; 
+    border-left: 3px solid #0055E7;
+    border-bottom: 3px solid #0055E7;  
+    border-radius: 6px;
+    min-width: 300px;
+    min-height: 200px;
+
+}
+
+.desktop-icon{
+    position: absolute;
+    top: 1%;
+    left: 1%;
+
+    color: white;
+    font-size: x-small;
+    text-align: center;
+    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+    
+    overflow: hidden;
+}
+
+.desktop-icon-img{
+    width: 32px;
+    height: 32px;
+}
+
+.blue-tint{
+    width: 34px;
+    height: 33px;
+    top: 0px;
+    left: 4px;
+    position: absolute;
+    background: rgba(0, 85, 231, 0.5);
+
+}
+
+.desktop-icon.selected .desktop-icon-img{
+    background: rgba(0, 85, 231, 0.3);
+    outline: 1px dotted rgba(255, 255, 255, 0.7);
+}
+.desktop-icon.selected .icon-text{
+    background: rgba(0, 85, 231, 0.3);
+    /* outline: 1px dotted rgba(255, 255, 255, 0.7); */
+}
+
+.main-layout{
+    background: linear-gradient(pink,palevioletred);
+    z-index: 1;
+
+}
+
+.playerHeader{
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial;
+    font-weight: bold;
+    
+    background: linear-gradient(#227CF8 0%,#0055E7 20%,#0055E7 60%,#227CF8 90%,#0055E7 100%);
+    /* outline: 0px solid black; */
+    display:grid;
+    grid-template-columns: auto 1fr auto auto auto;
+    align-items: center;
+    justify-content: left;
+    text-align: left;
+    padding: 1px;
+
+}
+
+.playerHeader img:active{
+    filter: brightness(0.5);
+}
+
+.icon{
+    width: 12;
+    height: 12;
+    margin: 2px;
+    margin-right: 5px;
+    justify-content: center;
+}
+
+.l-icon:hover{
+    filter: invert();
+}
+
+.l-icon:active{
+    transform: scale(0.9);
+}
+
+.cover{
+    width: 50px;
+    height: 50px;
+    margin: 2px 2px 2px 2px;
+    filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.5));
+}
+
+.detailSongVolume{
+    display: flex;
+}
+
+.detailSongInfo{
+    align-content: center;
+}
+
+.playerDetail{
+    font-size: x-small;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    padding: 10px 20px;
+    gap: 10px;
+}
+
+.detailSongTitle{
+    font-size: larger;
+    font-weight: bold;
+}
+
+.playerScrubber{
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    padding: 10px;
+}
+
+.playerController{
+      outline: 1px solid black;
+      display: grid;
+      place-content: center;
+}
+
+.controllerButtons{
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 3fr;
+    margin: 10px;
+    padding: 10px;
+    gap: 10px;
+}
+
+#previous-btn{
+    transform: rotate(180deg);
+}
+
+#previous-btn:active{
+    transform: rotate(180deg) scale(0.9);
+}
+
+#pause-btn{
+    display: none;
+}
+
+#Restore{
+    display: none;
+}
+
+/* playlist styling start*/
+
+.playlist{
+    position: absolute;
+    background:rgb(239, 99, 247, 0.607);
+    z-index: -1;
+
+    width: 100%;
+    height: 100%;
+
+    display: grid;
+    grid-template-columns: 1fr auto;
+    backdrop-filter: blur(5px);
+
+    text-align: center;
+    top: 0%;
+
+    transition: all 0.3s;
+}
+
+/* taskbar styling start*/
+
+.taskbar-container{
+    position: absolute;
+    align-items: center;
+    left: 0;
+    bottom: -4px;
+    width: 100%;
+}
+
+.taskbar-image{
+    width: 100%;
+    object-fit: fill;
+}
+
+#taskbar-first{
+    display: "";
+}
+
+#taskbar-second{
+    display: none;
+}
+
+#taskbar-third{
+    display: none;
+}

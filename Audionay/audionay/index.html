@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audionay</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Basic&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="./Assets/css/style.css"/>
+
+</head>
+<body>
+
+    <div class="taskbar-container">
+        <img src="./Assets/img/first.png" draggable="false" class="taskbar-image" id="taskbar-first">
+        <img src="./Assets/img/first.png" draggable="false" class="taskbar-image" id="taskbar-second">
+        <img src="./Assets/img/first.png" draggable="false" class="taskbar-image" id="taskbar-third">
+    </div>
+
+
+<!--TASKBAR ABOVE-->
+    <div class="desktop-icon">
+        <img src="./Assets/img/Audionayicon.png" draggable="false" width="24" height="100%" class="desktop-icon-img" id="desktop-icon-img" style="    outline: 1px solid black;">
+        <div class="blue-tint" id="blue-tint"></div>
+        <div class="icon-text">Audionay</div>
+    </div>
+
+
+<!--Below sits the AudioPlayer Container, Above might be the icon, Somewhere else will be the taskbar-->
+    <div class="audioPlayerContainer" id="player-window">
+
+        <div class="playlist" id="playlist">
+            playlist here
+            <img src="./Assets/img/btkcross.svg" draggable="false" class="l-icon" id="playlist-close-btn">
+        </div>
+
+        <div class="main-layout">
+            <div class="playerHeader">
+                <img src="./Assets/img/Audionayicon.png" draggable="false" width="24" height="80%" class="icon" style="       outline: 1px solid black;">
+                Audionay Player
+                <img src="./Assets/img/Minimize.png" id="Minimize" draggable="false" width="24" height="80%" class="icon">
+                <img src="./Assets/img/Maximize.png" id="Maximize" draggable="false" width="24" height="80%" class="icon">
+                <img src="./Assets/img/Restore.png"  id="Restore"  draggable="false" width="24" height="80%" class="icon">
+                <img src="./Assets/img/Exit.png"     id="Exit"     draggable="false" width="24" height="80%" class="icon">
+            </div>
+
+            <div class="playerDetail">
+
+                <div class="detailSongCover">
+                    <img src="./Assets/img/pfp.jpg" draggable="false" alt="song cover" class="cover">
+                </div>
+                <div class="detailSongInfo">
+                    <div class="detailSongTitle">thisthat song</div>
+                    <div class="detailSongArtist">somewhat artist</div>
+                    <div class="detailSongVolume">
+                        <img src="./Assets/img/btkvolup.svg" draggable="false" alt="volIcon" class="icon">
+                        <div class="detailVolumeLevel">
+                            <input type="range">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="playerScrubber">
+                <div class="progress">0:30</div>
+                <input type="range" class="progressScrubber">
+                <div class="duration">5:00</div>
+
+            </div>
+            <div class="playerController">
+                <div class="controllerButtons">
+                    <img src="./Assets/img/btklist.svg"    draggable="false" alt="" class="l-icon" id="playlist-btn">
+                    <img src="./Assets/img/btkshuffle.svg" draggable="false" alt="" class="l-icon" id="shuffle-btn">
+                    <img src="./Assets/img/btkchange.svg"  draggable="false" alt="" class="l-icon" id="previous-btn">
+                    <img src="./Assets/img/btkplay.svg"    draggable="false" alt="" class="l-icon" id="play-btn">
+                    <img src="./Assets/img/btkpause.svg"   draggable="false" alt="" class="l-icon" id="pause-btn">
+                    <img src="./Assets/img/btkchange.svg"  draggable="false" alt="" class="l-icon" id="next-btn">
+                    <img src="./Assets/img/btkloop.svg"    draggable="false" alt="" class="l-icon" id="loop-btn">
+                </div>
+        </div>
+        </div>
+    </div>
+
+    <script src="./Assets/js/app.js"></script>
+</body>
+</html>
