@@ -8,6 +8,8 @@ html, body{
 
 
 body{
+cursor: url('default_arrow.cur'), auto;
+
     display: grid;
     place-items: center;
     background-color: grey;
@@ -77,6 +79,8 @@ body{
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial;
     font-weight: bold;
     
+    /* border-radius: 2px; */
+
     background: linear-gradient(#227CF8 0%,#0055E7 20%,#0055E7 60%,#227CF8 90%,#0055E7 100%);
     /* outline: 0px solid black; */
     display:grid;
@@ -90,6 +94,10 @@ body{
 
 .playerHeader img:active{
     filter: brightness(0.5);
+}
+
+#headerLogo:active{
+    filter: none;
 }
 
 .icon{
@@ -201,21 +209,39 @@ body{
     left: 0;
     bottom: -4px;
     width: 100%;
+
+    aspect-ratio: 1443/30;
+}
+
+/* rookie mistake here, I am scaling the taskbar-tab container, not the taskbar tab images facepalm*/
+
+.taskbar-tab{
+    position: absolute;
+    bottom: 8%;
+    left: 7.4%;
+    height: 82%;
+    align-items: center;
+}
+
+.taskbar-tab img{
+    height: 91.5%;
+    width: auto;
+    display: block;
 }
 
 .taskbar-image{
     width: 100%;
+    height: 100%;
     object-fit: fill;
 }
 
-#taskbar-first{
-    display: "";
-}
+#clock{
+    position: absolute;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 
-#taskbar-second{
-    display: none;
-}
+    font-size: 0.8vw;
 
-#taskbar-third{
-    display: none;
+    right: 1.01%;
+    top: 20%;
+    
 }
