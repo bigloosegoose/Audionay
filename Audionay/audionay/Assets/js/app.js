@@ -10,6 +10,12 @@ const blueTint = document.getElementById("blue-tint");
 const playerDetail = document.getElementById("bottom");
 const playerWindow = document.getElementById("player-window");
 
+const pause = document.getElementById("pause-btn");
+const play = document.getElementById("play-btn");
+const next = document.getElementById("next-btn");
+const previous = document.getElementById("previous-btn");
+const loop = document.getElementById("loop-btn");
+
 const taskbarSecond = document.getElementById("taskbar-second");
 const taskbarThird = document.getElementById("taskbar-third");
 
@@ -27,8 +33,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 blueTint.style.display = "none";
 taskbarThird.style.display = "none";
 playlist.style.display = "none";
-
-//dragging logic
+pause.style.display = "none";
 
 //making draggable
 dragElement(document.getElementById("dragbox"));
@@ -120,6 +125,12 @@ function closeWindow() {
   taskbarSecond.style.display = "none";
   taskbarThird.style.display = "none";
   playlist.style.display = "none";
+
+  pause.style.display = "none";
+  play.style.display = "";
+
+  songfile.pause();
+  songfile.currentTime = 0;
 }
 
 function updateClock() {
@@ -173,10 +184,12 @@ function playSong(index) {
   document.querySelector(".playerDetail .detailSongArtist").textContent =
     song.artist;
 
-  //forgot to add the actual song logic lmao
   songfile.pause();
-  songfile = new Audio(`./Assets/audiofiles/${song.url}`);
+  songfile.src = `./Assets/audiofiles/${song.url}`;
+  songfile.volume = volumeRange.value / 100;
   songfile.play();
+  pause.style.display = "";
+  play.style.display = "none";
   console.log("something should be playing");
 }
 
@@ -249,8 +262,86 @@ taskbarThird.addEventListener("mouseout", () => {
 
 //range scrollers
 volumeRange.addEventListener("input", function (event) {
-  console.log(event.target.value);
+  songfile.volume = event.target.value / 100;
 });
-volumeRange.addEventListener("input", function (event) {
-  console.log(event.target.value);
+
+songfile.addEventListener("timeupdate", () => {
+  if (songfile.duration) {
+    progressRange.value = (songfile.currentTime / songfile.duration) * 100;
+  }
+});
+
+progressRange.addEventListener("input", function (event) {
+  songfile.play();
+  songfile.currentTime = (event.target.value / 100) * songfile.duration;
+});
+
+//player functions
+let loopOn = false;
+function toggleLoop() {
+  if (loopOn) {
+    loopOn = false;
+    loop.style.filter = "";
+    console.log("not looping");
+  } else {
+    loopOn = true;
+    loop.style.filter = "invert()";
+    console.log("looping");
+  }
+}
+
+songfile.addEventListener("ended", () => {
+  songfile.pause();
+  if (loopOn) {
+    songfile.play();
+  }
+});
+
+loop.addEventListener("click", () => {
+  toggleLoop();
+});
+pause.addEventListener("click", () => {
+  songfile.pause();
+  console.log("pause");
+  pause.style.display = "none";
+  play.style.display = "";
+});
+play.addEventListener("click", () => {
+  songfile.play();
+  console.log("play");
+  pause.style.display = "";
+  play.style.display = "none";
+});
+next.addEventListener("click", () => {
+  songfile.pause();
+  currentSongIndex = currentSongIndex + 1;
+  const song = audios[currentSongIndex];
+  songfile.src = `./Assets/audiofiles/${song.url}`;
+  songfile.volume = volumeRange.value / 100;
+  songfile.play();
+  pause.style.display = "";
+  play.style.display = "none";
+  console.log("somethings");
+
+  document.querySelector(".playerDetail .detailSongTitle").textContent =
+    song.title;
+  document.querySelector(".playerDetail .detailSongArtist").textContent =
+    song.artist;
+});
+
+previous.addEventListener("click", () => {
+  songfile.pause();
+  currentSongIndex = currentSongIndex - 1;
+  const song = audios[currentSongIndex];
+  songfile.src = `./Assets/audiofiles/${song.url}`;
+  songfile.volume = volumeRange.value / 100;
+  pause.style.display = "";
+  play.style.display = "none";
+  songfile.play();
+  console.log("somethings");
+
+  document.querySelector(".playerDetail .detailSongTitle").textContent =
+    song.title;
+  document.querySelector(".playerDetail .detailSongArtist").textContent =
+    song.artist;
 });

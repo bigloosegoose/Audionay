@@ -57,7 +57,7 @@
       <div class="audioPlayerContainer" id="player-window">
         <!--PLAYLIST BELOW CAUTION-->
         <div class="playlist" id="playlist">
-          <div>playlist</div>
+          <div class="playlistTitle">playlist</div>
           <img
             src="./Assets/img/btkcross.svg"
             draggable="false"
@@ -124,8 +124,8 @@
                 />
               </div>
               <div class="detailSongInfo">
-                <div class="detailSongTitle">thisthat song</div>
-                <div class="detailSongArtist">somewhat artist</div>
+                <div class="detailSongTitle">no song selected</div>
+                <div class="detailSongArtist">unknown artist</div>
                 <div class="detailSongVolume">
                   <img
                     src="./Assets/img/btkvolup.svg"
@@ -142,7 +142,7 @@
 
             <div class="playerScrubber" id="playerScrubber">
               <div class="progress">0:30</div>
-              <input type="range" class="progressrange" />
+              <input type="range" id="progressrange" />
               <div class="duration">5:00</div>
             </div>
             <div class="playerController">
@@ -153,13 +153,6 @@
                   alt=""
                   class="l-icon"
                   id="playlist-btn"
-                />
-                <img
-                  src="./Assets/img/btkshuffle.svg"
-                  draggable="false"
-                  alt=""
-                  class="l-icon"
-                  id="shuffle-btn"
                 />
                 <img
                   src="./Assets/img/btkchange.svg"
