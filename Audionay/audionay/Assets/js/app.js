@@ -4,9 +4,10 @@ const playlistBtn = document.getElementById("playlist-btn");
 const playlistCloseBtn = document.getElementById("playlist-close-btn");
 const playlist = document.getElementById("playlist");
 
-const desktopIcon = document.querySelector(".desktop-icon")
+const desktopIcon = document.querySelector(".desktop-icon");
 // const desktopIconImg = document.getElementById("desktop-icon-img");
 const blueTint = document.getElementById("blue-tint");
+const playerDetail = document.getElementById("bottom");
 const playerWindow = document.getElementById("player-window");
 
 const taskbarSecond = document.getElementById("taskbar-second");
@@ -17,60 +18,117 @@ const Minimize = document.getElementById("Minimize");
 const Restore = document.getElementById("Restore");
 const Exit = document.getElementById("Exit");
 
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const volumeRange = document.getElementById("volrange");
+const progressRange = document.getElementById("progressrange");
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 //initialize or something
 blueTint.style.display = "none";
 taskbarThird.style.display = "none";
 
-//functions
+//dragging logic
+
+//making draggable
+dragElement(document.getElementById("dragbox"));
+
+function dragElement(elmnt) {
+  var pos1 = 0,
+    pos2 = 0,
+    pos3 = 0,
+    pos4 = 0;
+  if (document.getElementById(elmnt.id + "header")) {
+    document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+  } else {
+    elmnt.onmousedown = dragMouseDown;
+  }
+
+  function dragMouseDown(e) {
+    e = e || window.event;
+    e.preventDefault();
+
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    e.preventDefault();
+
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+
+    console.log(elmnt.offsetTop - pos2 + "px", elmnt.offsetLeft - pos1 + "px");
+
+    elmnt.style.top = elmnt.offsetTop - pos2 + "px";
+    elmnt.style.left = elmnt.offsetLeft - pos1 + "px";
+  }
+
+  function closeDragElement() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+}
+//misc functions
 
 async function playlistShow() {
-    playlist.style.top = "105%"; 
-    await sleep(100);
-    playlist.style.zIndex = "1";
-    await sleep(100);
-    playlist.style.top = "0%";
+  playlist.style.top = "105%";
+  await sleep(100);
+  playlist.style.zIndex = "1";
+  await sleep(100);
+  playlist.style.top = "0%";
 }
 
 async function playlistHide() {
-    playlist.style.top = "105%"; 
-    await sleep(100);
-    playlist.style.zIndex = "-1";
-    await sleep(100);
-    playlist.style.top = "0%";
+  playlist.style.top = "105%";
+  await sleep(100);
+  playlist.style.zIndex = "-1";
+  await sleep(100);
+  playlist.style.top = "0%";
 }
 
-function minimizeWindow() {
-    playerWindow.style.display = "none";
+async function minimizeWindow() {
+  playerWindow.style.display = "none";
+  taskbarSecond.style.display = "none";
+  playlist.style.display = "none";
 
-    taskbarSecond.style.display = "none";
-    taskbarThird.style.display = "";
+  taskbarThird.style.display = "";
 }
 
-function openWindow() {
-    playerWindow.style.display = ""
-    taskbarSecond.style.display = "";
-    taskbarThird.style.display = "none";
+async function openWindow() {
+  playerDetail.style.display = "";
+  playerWindow.style.display = "";
+  taskbarSecond.style.display = "";
+  taskbarThird.style.display = "none";
+
+  playerWindow.style.borderRight = "3px solid #0055E7";
+  playerWindow.style.borderLeft = "3px solid #0055E7";
+  playerWindow.style.borderBottom = "3px solid #0055E7";
 }
 
-function closeWindow(){
-    playerWindow.style.display = "none";
-    taskbarSecond.style.display = "none";
-    taskbarThird.style.display = "none";
+function closeWindow() {
+  playerWindow.style.display = "none";
+  taskbarSecond.style.display = "none";
+  taskbarThird.style.display = "none";
+  playlist.style.display = "none";
 }
 
-function updateClock(){
-    const now = new Date();
-    let hours = now.getHours();
-    const minutes = now.getMinutes().toString().padStart(2, "0");
-    const ampm = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12;
-    hours = hours === 0 ? 12 : hours;
+function updateClock() {
+  const now = new Date();
+  let hours = now.getHours();
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  hours = hours === 0 ? 12 : hours;
 
-    document.getElementById("clock").textContent = `${hours}:${minutes} ${ampm}`;
+  document.getElementById("clock").textContent = `${hours}:${minutes} ${ampm}`;
 }
 
+const playlistItems = document.getElementById("playlist-items");
 
 updateClock();
 setInterval(updateClock, 1000);
@@ -78,59 +136,69 @@ setInterval(updateClock, 1000);
 //player app buttons
 
 playlistBtn.addEventListener("click", () => {
-    playlistShow();
+  playlistShow();
 });
 
 playlistCloseBtn.addEventListener("click", () => {
-    playlistHide();
+  playlistHide();
 });
 
 //desktop
 
 document.body.addEventListener("mousedown", (e) => {
-    if (desktopIcon.contains(e.target)){
-        desktopIcon.classList.add("selected");
-        blueTint.style.display = "";
-    }
-    else{
-        desktopIcon.classList.remove("selected");
-        blueTint.style.display = "none";
-    }
+  if (desktopIcon.contains(e.target)) {
+    desktopIcon.classList.add("selected");
+    blueTint.style.display = "";
+  } else {
+    desktopIcon.classList.remove("selected");
+    blueTint.style.display = "none";
+  }
 });
 
 Exit.addEventListener("click", () => {
-    closeWindow();
+  closeWindow();
+
+  document.getElementById("dragbox").style.top = "auto";
+  document.getElementById("dragbox").style.left = "auto";
 });
 
 Minimize.addEventListener("click", () => {
-    minimizeWindow();
+  minimizeWindow();
 });
 
 blueTint.addEventListener("dblclick", () => {
-    openWindow();
-    desktopIcon.classList.remove("selected");
-    blueTint.style.display = "none";
+  openWindow();
+  desktopIcon.classList.remove("selected");
+  blueTint.style.display = "none";
 });
 
 //taskbar buttons
 taskbarSecond.addEventListener("click", () => {
-    minimizeWindow();
+  minimizeWindow();
 });
 
 taskbarThird.addEventListener("click", () => {
-    openWindow();
+  openWindow();
 });
 //hover
 taskbarSecond.addEventListener("mouseover", () => {
-    taskbarSecond.src = "./Assets/img/secondHover.png";
+  taskbarSecond.src = "./Assets/img/secondHover.png";
 });
 taskbarSecond.addEventListener("mouseout", () => {
-    taskbarSecond.src = "./Assets/img/secondmini.png";
+  taskbarSecond.src = "./Assets/img/secondmini.png";
 });
 
 taskbarThird.addEventListener("mouseover", () => {
-    taskbarThird.src = "./Assets/img/thirdHover.png";
+  taskbarThird.src = "./Assets/img/thirdHover.png";
 });
 taskbarThird.addEventListener("mouseout", () => {
-    taskbarThird.src = "./Assets/img/thirdmini.png";
+  taskbarThird.src = "./Assets/img/thirdmini.png";
+});
+
+//range scrollers
+volumeRange.addEventListener("input", function (event) {
+  console.log(event.target.value);
+});
+volumeRange.addEventListener("input", function (event) {
+  console.log(event.target.value);
 });
