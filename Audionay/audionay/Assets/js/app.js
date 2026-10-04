@@ -26,6 +26,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 //initialize or something
 blueTint.style.display = "none";
 taskbarThird.style.display = "none";
+playlist.style.display = "none";
 
 //dragging logic
 
@@ -76,6 +77,8 @@ function dragElement(elmnt) {
 //misc functions
 
 async function playlistShow() {
+  playlist.style.display = "";
+  await sleep(100);
   playlist.style.top = "105%";
   await sleep(100);
   playlist.style.zIndex = "1";
@@ -89,6 +92,8 @@ async function playlistHide() {
   playlist.style.zIndex = "-1";
   await sleep(100);
   playlist.style.top = "0%";
+  await sleep(100);
+  playlist.style.display = "none";
 }
 
 async function minimizeWindow() {
@@ -128,7 +133,54 @@ function updateClock() {
   document.getElementById("clock").textContent = `${hours}:${minutes} ${ampm}`;
 }
 
+// PLAYLIST FUNCTIONS
 const playlistItems = document.getElementById("playlist-items");
+let currentSongIndex = 0;
+
+function renderPlaylist() {
+  playlistItems.innerHTML = "";
+
+  audios.forEach((song, index) => {
+    const item = document.createElement("div");
+    item.className = "playlist-detail";
+    item.dataset.index = index;
+
+    item.innerHTML = `<div class="detailSongCover">
+    <img src="./Assets/img/pfp.jpg" draggable="false" alt="song cover" class="cover">
+    </div>
+    <div class="detailSongInfo">
+    <div class="detailSongTitle">${song.title}</div>
+    <div class="detailSongArtist">${song.artist}</div>
+    </div>
+    `;
+
+    item.addEventListener("click", () => {
+      playSong(index);
+    });
+
+    playlistItems.appendChild(item);
+  });
+}
+
+let songfile = new Audio();
+
+function playSong(index) {
+  currentSongIndex = index;
+  const song = audios[index];
+
+  document.querySelector(".playerDetail .detailSongTitle").textContent =
+    song.title;
+  document.querySelector(".playerDetail .detailSongArtist").textContent =
+    song.artist;
+
+  //forgot to add the actual song logic lmao
+  songfile.pause();
+  songfile = new Audio(`./Assets/audiofiles/${song.url}`);
+  songfile.play();
+  console.log("something should be playing");
+}
+
+renderPlaylist();
 
 updateClock();
 setInterval(updateClock, 1000);

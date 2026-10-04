@@ -263,7 +263,11 @@ input[type="range"]::-ms-thumb {
   align-items: center;
   width: 108%;
   height: 50%;
-  
+}
+
+.playlist-detail:hover {
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
 }
 
 /* taskbar styling start*/
