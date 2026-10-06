@@ -151,6 +151,10 @@ input[type="range"]::-ms-thumb {
   filter: brightness(0.5);
 }
 
+.playlistHeader img:active {
+  filter: brightness(0.5);
+}
+
 #headerLogo:active {
   filter: none;
 }
@@ -239,23 +243,55 @@ input[type="range"]::-ms-thumb {
 #Restore {
   display: none;
 }
+#Playlist-Restore {
+  display: none;
+}
 
 /* playlist styling start*/
 
-.playlist {
-  position: absolute;
-  background: rgb(239, 99, 247, 0.607);
-  z-index: -1;
+.playlistHeader {
+  font-family:
+    "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial;
+  font-weight: bold;
 
-  width: 100%;
-  height: 100%;
+  /* border-radius: 2px; */
 
+  background: linear-gradient(
+    #227cf8 0%,
+    #0055e7 20%,
+    #0055e7 60%,
+    #227cf8 90%,
+    #0055e7 100%
+  );
+  /* outline: 0px solid black; */
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto auto auto;
+  align-items: center;
+  justify-content: left;
+  text-align: left;
+  padding: 1px;
+}
+
+.playlist {
+  position: relative;
+  background: rgb(239, 99, 247, 0.607);
+  z-index: 1;
+
+  left: 345px;
+
   backdrop-filter: blur(5px);
 
   text-align: center;
   top: 0%;
+
+  filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.5));
+
+  border-right: 3px solid #0055e7;
+  border-left: 3px solid #0055e7;
+  border-bottom: 3px solid #0055e7;
+  border-radius: 6px;
+  min-width: 300px;
+  min-height: 200px;
 
   transition: all 0.3s;
 }
@@ -263,9 +299,9 @@ input[type="range"]::-ms-thumb {
 .playlist-detail {
   outline: 1px solid white;
   display: grid;
-  grid-template-columns: auto auto;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  width: 108%;
+  width: 100%;
   height: 50%;
 }
 
@@ -316,4 +352,19 @@ input[type="range"]::-ms-thumb {
 
   right: 1.01%;
   top: 20%;
+}
+
+.resize-handle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  right: 0;
+  bottom: 0;
+  cursor: nwse-resize;
+  z-index: 10;
+}
+
+.audioPlayerContainer,
+.playlist {
+  overflow: hidden;
 }

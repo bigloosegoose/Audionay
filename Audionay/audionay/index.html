@@ -51,22 +51,60 @@
       <div class="blue-tint" id="blue-tint"></div>
       <div class="icon-text">Audionay</div>
     </div>
-
+    <!--PLAYLIST BELOW CAUTION-->
+    <div class="dragbox" id="dragbox2">
+      <div class="playlist" id="playlist">
+        <div class="playlistHeader">
+          <img
+            src="./Assets/img/Audionayicon.png"
+            draggable="false"
+            width="24"
+            height="80%"
+            class="icon"
+            style="outline: 1px solid black"
+          />
+          Audionay Playlist
+          <img
+            src="./Assets/img/Minimize.png"
+            id="playlist-minimize-btn"
+            draggable="false"
+            width="24"
+            height="80%"
+            class="icon"
+          />
+          <img
+            src="./Assets/img/Maximize.png"
+            id="Playlist-Maximize"
+            draggable="false"
+            width="24"
+            height="80%"
+            class="icon"
+          />
+          <img
+            src="./Assets/img/Restore.png"
+            id="Playlist-Restore"
+            draggable="false"
+            width="24"
+            height="80%"
+            class="icon"
+          />
+          <img
+            src="./Assets/img/Exit.png"
+            id="playlist-close-btn"
+            draggable="false"
+            width="24"
+            height="80%"
+            class="icon"
+          />
+        </div>
+        <div class="playlist-items" id="playlist-items"></div>
+        <div class="resize-handle" id="resize-playlist"></div>
+      </div>
+    </div>
+    <!--PLAYLIST ABOVE CAUTION-->
     <!--Below sits the AudioPlayer Container, Above might be the icon, Somewhere else will be the taskbar-->
     <div class="dragbox" id="dragbox">
       <div class="audioPlayerContainer" id="player-window">
-        <!--PLAYLIST BELOW CAUTION-->
-        <div class="playlist" id="playlist">
-          <div class="playlistTitle">playlist</div>
-          <img
-            src="./Assets/img/btkcross.svg"
-            draggable="false"
-            class="l-icon"
-            id="playlist-close-btn"
-          />
-          <div class="playlist-items" id="playlist-items"></div>
-        </div>
-        <!--PLAYLIST ABOVE CAUTION-->
         <div class="main-layout">
           <div class="playerHeader" id="dragboxheader">
             <img
@@ -114,6 +152,7 @@
           </div>
 
           <div class="bottom" id="bottom">
+            <div class="resize-handle" id="resize-player"></div>
             <div class="playerDetail" id="player-detail">
               <div class="detailSongCover">
                 <img
@@ -141,9 +180,9 @@
             </div>
 
             <div class="playerScrubber" id="playerScrubber">
-              <div class="progress">0:30</div>
+              <div class="progress" id="progress">0:30</div>
               <input type="range" id="progressrange" />
-              <div class="duration">5:00</div>
+              <div class="duration" id="duration">5:00</div>
             </div>
             <div class="playerController">
               <div class="controllerButtons">

@@ -1,9 +1,9 @@
 let audios = [
   {
     id: 1,
-    title: "Sunshine mastered",
+    title: "Sunshine",
     artist: "Kiri",
-    url: "Sunshine mastered.mp3",
+    url: "Sunshine.mp3",
     thumbnail: "",
   },
 

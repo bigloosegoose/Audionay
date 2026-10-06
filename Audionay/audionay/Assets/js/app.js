@@ -2,6 +2,7 @@
 
 const playlistBtn = document.getElementById("playlist-btn");
 const playlistCloseBtn = document.getElementById("playlist-close-btn");
+const playlistMinimizeBtn = document.getElementById("playlist-minimize-btn");
 const playlist = document.getElementById("playlist");
 
 const desktopIcon = document.querySelector(".desktop-icon");
@@ -24,6 +25,9 @@ const Minimize = document.getElementById("Minimize");
 const Restore = document.getElementById("Restore");
 const Exit = document.getElementById("Exit");
 
+const songDuration = document.getElementById("duration");
+const songprogress = document.getElementById("progress");
+
 const volumeRange = document.getElementById("volrange");
 const progressRange = document.getElementById("progressrange");
 
@@ -37,6 +41,7 @@ pause.style.display = "none";
 
 //making draggable
 dragElement(document.getElementById("dragbox"));
+dragElement(document.getElementById("dragbox2"));
 
 function dragElement(elmnt) {
   var pos1 = 0,
@@ -79,25 +84,49 @@ function dragElement(elmnt) {
     document.onmousemove = null;
   }
 }
+//resize beta
+function makeResizable(targetEl, handleEl, minW = 300, minH = 200) {
+  handleEl.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startW = targetEl.offsetWidth;
+    const startH = targetEl.offsetHeight;
+
+    function doResize(e) {
+      targetEl.style.width =
+        Math.max(startW + (e.clientX - startX), minW) + "px";
+      targetEl.style.height =
+        Math.max(startH + (e.clientY - startY), minH) + "px";
+    }
+    function stopResize() {
+      document.removeEventListener("mousemove", doResize);
+      document.removeEventListener("mouseup", stopResize);
+    }
+
+    document.addEventListener("mousemove", doResize);
+    document.addEventListener("mouseup", stopResize);
+  });
+}
+
+makeResizable(
+  document.getElementById("player-window"),
+  document.getElementById("resize-player"),
+);
+makeResizable(
+  document.getElementById("playlist"),
+  document.getElementById("resize-playlist"),
+);
+
 //misc functions
 
 async function playlistShow() {
   playlist.style.display = "";
-  await sleep(100);
-  playlist.style.top = "105%";
-  await sleep(100);
-  playlist.style.zIndex = "1";
-  await sleep(100);
-  playlist.style.top = "0%";
 }
 
 async function playlistHide() {
-  playlist.style.top = "105%";
-  await sleep(100);
-  playlist.style.zIndex = "-1";
-  await sleep(100);
-  playlist.style.top = "0%";
-  await sleep(100);
   playlist.style.display = "none";
 }
 
