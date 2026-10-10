@@ -77,10 +77,12 @@ input[type="range"]::-ms-thumb {
   border-left: 3px solid #0055e7;
   border-bottom: 3px solid #0055e7;
   border-radius: 6px;
-  min-width: 300px;
-  min-height: 200px;
+  box-sizing: border-box;
+  overflow: hidden;
 
-  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  transition: none; /*experiment?*/
 }
 
 .desktop-icon {
@@ -122,6 +124,8 @@ input[type="range"]::-ms-thumb {
 .main-layout {
   background: linear-gradient(pink, #d87093);
   z-index: 1;
+
+  transform-origin: top left;
 }
 
 .playerHeader {
@@ -293,7 +297,14 @@ input[type="range"]::-ms-thumb {
   min-width: 300px;
   min-height: 200px;
 
-  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  transition: none; /*experiment*/
+}
+
+.playlist-items {
+  flex: 1;
+  overflow-y: auto;
 }
 
 .playlist-detail {
@@ -301,8 +312,9 @@ input[type="range"]::-ms-thumb {
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
+  min-height: 60px;
   width: 100%;
-  height: 50%;
+  height: auto;
 }
 
 .playlist-detail:hover {

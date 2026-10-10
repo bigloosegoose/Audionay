@@ -112,14 +112,68 @@ function makeResizable(targetEl, handleEl, minW = 300, minH = 200) {
 }
 
 makeResizable(
-  document.getElementById("player-window"),
-  document.getElementById("resize-player"),
-);
-makeResizable(
   document.getElementById("playlist"),
   document.getElementById("resize-playlist"),
 );
 
+//scalable is the new cool
+function makeScalable(
+  windowEl,
+  contentEl,
+  handleEl,
+  minScale = 0.8,
+  maxScale = 3,
+) {
+  const baseW = contentEl.offsetWidth;
+  const baseH = contentEl.offsetHeight;
+  const borderX = windowEl.offsetWidth - windowEl.clientWidth;
+  const borderY = windowEl.offsetHeight - windowEl.clientHeight;
+
+  contentEl.style.width = baseW + "px";
+  contentEl.style.height = baseH + "px";
+
+  function applyScale(s) {
+    s = Math.min(Math.max(s, minScale), maxScale);
+    contentEl.style.transform = `scale(${s})`;
+    windowEl.style.width = baseW * s + borderX + "px";
+    windowEl.style.height = baseH * s + borderY + "px";
+    return s;
+  }
+  let scale = 1;
+
+  handleEl.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startScale = scale;
+
+    function doScale(e) {
+      const dx = (e.clientX - startX) / baseW;
+      const dy = (e.clientY - startY) / baseH;
+      scale = applyScale(startScale + (dx + dy) / 2);
+    }
+    function stopScale(e) {
+      document.removeEventListener("mousemove", doScale);
+      document.removeEventListener("mouseup", stopScale);
+    }
+
+    document.addEventListener("mousemove", doScale);
+    document.addEventListener("mouseup", stopScale);
+  });
+}
+
+//load wait
+
+window.addEventListener("load", () => {
+  console.log("windowloaded");
+  makeScalable(
+    document.getElementById("player-window"),
+    document.querySelector("#player-window .main-layout"),
+    document.getElementById("resize-player"),
+  );
+});
 //misc functions
 
 async function playlistShow() {
@@ -212,13 +266,13 @@ function playSong(index) {
     song.title;
   document.querySelector(".playerDetail .detailSongArtist").textContent =
     song.artist;
-
   songfile.pause();
   songfile.src = `./Assets/audiofiles/${song.url}`;
   songfile.volume = volumeRange.value / 100;
   songfile.play();
   pause.style.display = "";
   play.style.display = "none";
+
   console.log("something should be playing");
 }
 
@@ -296,7 +350,23 @@ volumeRange.addEventListener("input", function (event) {
 
 songfile.addEventListener("timeupdate", () => {
   if (songfile.duration) {
+    let x = Math.floor((songfile.duration % 60) / 1);
+    let y = Math.floor((songfile.currentTime % 60) / 1);
     progressRange.value = (songfile.currentTime / songfile.duration) * 100;
+    if (x < 10) {
+      document.getElementById("duration").textContent =
+        `${Math.floor(songfile.duration / 60)}:0${x}`;
+    } else {
+      document.getElementById("duration").textContent =
+        `${Math.floor(songfile.duration / 60)}:${x}`;
+    }
+    if (y < 10) {
+      document.getElementById("progress").textContent =
+        `${Math.floor(songfile.currentTime / 60)}:0${y}`;
+    } else {
+      document.getElementById("progress").textContent =
+        `${Math.floor(songfile.currentTime / 60)}:${y}`;
+    }
   }
 });
 
