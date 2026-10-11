@@ -55,6 +55,9 @@ function dragElement(elmnt) {
   }
 
   function dragMouseDown(e) {
+    if (elmnt.classList.contains("maximized")) {
+      return;
+    }
     e = e || window.event;
     e.preventDefault();
 
@@ -105,7 +108,7 @@ function pinPosition(box) {
   box.style.top = box.offsetTop + "px";
 }
 
-function smoveTo(box, el, x, y) {
+function moveTo(box, el, x, y) {
   box.style.left = x - el.offsetLeft + "px";
   box.style.top = y - el.offsetTop + "px";
 }
@@ -113,11 +116,11 @@ function smoveTo(box, el, x, y) {
 function workArea() {
   return {
     w: window.innerWidth,
-    h: document.querySelector(".taskbar-container").getBoundingClientRect.top,
+    h: document.querySelector(".taskbar-container").getBoundingClientRect().top,
   };
 }
 
-function trackDrag() {
+function trackDrag(e, onMove) {
   e.preventDefault();
   e.stopPropagation();
   const startX = e.clientX;
@@ -133,7 +136,6 @@ function trackDrag() {
   document.addEventListener("mousemove", move);
   document.addEventListener("mouseup", stop);
 }
-addEdgeHandles(document.getElementById("player-window")); //temp
 
 //player scale logic(not resize nono)
 function makeScalable(
@@ -143,7 +145,6 @@ function makeScalable(
   headerEl,
   bodyEl,
   minScale = 0.8,
-  maxScale = 3,
 ) {
   const baseW = bodyEl.offsetWidth;
   const baseBodyH = bodyEl.offsetHeight;
@@ -151,41 +152,167 @@ function makeScalable(
   const borderX = windowEl.offsetWidth - windowEl.clientWidth;
   const borderY = windowEl.offsetHeight - windowEl.clientHeight;
 
+  const minW = baseW * minScale + borderX;
+  const minH = headerH + baseBodyH * minScale + borderY;
+
   bodyEl.style.width = baseW + "px";
   bodyEl.style.height = baseBodyH + "px";
   bodyEl.style.transformOrigin = "top left";
 
-  let scale = 1;
+  // sets the window's outer size; the body scales to fit and is centered in the leftover space
+  function setSize(w, h) {
+    w = Math.max(w, minW);
+    h = Math.max(h, minH);
 
-  function setScale(s, force = false) {
-    scale = force ? s : Math.min(Math.max(s, minScale), maxScale);
-    bodyEl.style.transform = `scale(${scale})`;
-    layoutEl.style.height = headerH + baseBodyH * scale + "px";
-    windowEl.style.height = headerH + baseBodyH * scale + borderY + "px";
-    windowEl.style.width = baseW * scale + borderX + "px";
-    windowEl.style.height = headerH + baseBodyH * scale + borderY + "px";
+    const availW = w - borderX;
+    const availH = h - headerH - borderY;
+    const scale = Math.min(availW / baseW, availH / baseBodyH);
+    const offX = (availW - baseW * scale) / 2;
+    const offY = (availH - baseBodyH * scale) / 2;
+
+    windowEl.style.width = w + "px";
+    windowEl.style.height = h + "px";
+    layoutEl.style.height = h - borderY + "px";
+    bodyEl.style.transform = `translate(${offX}px, ${offY}px) scale(${scale})`;
+
+    return { w, h }; // the clamped size
   }
 
-  function fitScale(availW, availH) {
-    return Math.min(
-      (availW - borderX) / baseW,
-      (availH - borderY - borderY) / baseBodyH,
-    );
-  }
-}
+  setSize(baseW + borderX, headerH + baseBodyH + borderY);
 
-setScale(1);
+  addEdgeHandles(windowEl).forEach((handle) => {
+    const dir = handle.dataset.dir;
+    handle.addEventListener("mousedown", (e) => {
+      pinPosition(box);
+      const startW = windowEl.offsetWidth;
+      const startH = windowEl.offsetHeight;
+      const startLeft = box.offsetLeft;
+      const startTop = box.offsetTop;
 
-addEdgeHandles(windowEl).forEach((handle) => {
-  const dir = handle.dataset.dir;
-  handle.addEventListener("mousedown", (e) => {
-    pinPosition(box);
-    const startScale = scale;
-    const startW = windowEl.offsetWidth;
+      trackDrag(e, (dx, dy) => {
+        let w = startW;
+        let h = startH;
+        if (dir.includes("e")) w = startW + dx;
+        if (dir.includes("w")) w = startW - dx;
+        if (dir.includes("s")) h = startH + dy;
+        if (dir.includes("n")) h = startH - dy;
+
+        const size = setSize(w, h);
+
+        // keep the opposite edge anchored (uses the clamped size, not a DOM read)
+        if (dir.includes("w"))
+          box.style.left = startLeft + (startW - size.w) + "px";
+        if (dir.includes("n"))
+          box.style.top = startTop + (startH - size.h) + "px";
+      });
+    });
   });
+
+  return { setSize };
+}
+//yes playlist logic now
+function makeResizable(box, windowEl, minW = 300, minH = 200) {
+  addEdgeHandles(windowEl).forEach((handle) => {
+    const dir = handle.dataset.dir;
+    handle.addEventListener("mousedown", (e) => {
+      pinPosition(box);
+      const startW = windowEl.offsetWidth;
+      const startH = windowEl.offsetHeight;
+      const startLeft = box.offsetLeft;
+      const startTop = box.offsetTop;
+      trackDrag(e, (dx, dy) => {
+        let w = startW;
+        let h = startH;
+        if (dir.includes("e")) w = startW + dx;
+        if (dir.includes("w")) w = startW - dx;
+        if (dir.includes("s")) h = startH + dy;
+        if (dir.includes("n")) h = startH - dy;
+        w = Math.max(w, minW);
+        h = Math.max(h, minH);
+
+        windowEl.style.width = w + "px";
+        windowEl.style.height = h + "px";
+        if (dir.includes("w")) box.style.left = startLeft + (startW - w) + "px";
+        if (dir.includes("n")) box.style.top = startTop + (startH - h) + "px";
+      });
+    });
+  });
+}
+const playerBox = document.getElementById("dragbox");
+const playlistBox = document.getElementById("dragbox2");
+let playerScale;
+
+window.addEventListener("load", () => {
+  playerScale = makeScalable(
+    playerBox,
+    playerWindow,
+    document.querySelector("#player-window .main-layout"),
+    document.querySelector("#player-window .playerHeader"),
+    document.getElementById("bottom"),
+  );
+  makeResizable(playlistBox, playlist);
 });
 
-//load wait
+let playerPrev = null;
+
+Maximize.addEventListener("click", () => {
+  const area = workArea();
+  playerPrev = {
+    w: playerWindow.offsetWidth,
+    h: playerWindow.offsetHeight,
+    left: playerBox.offsetLeft,
+    top: playerBox.offsetTop,
+  };
+
+  playerBox.classList.add("maximized");
+  playerScale.setSize(area.w, area.h);
+  moveTo(playerBox, playerWindow, 0, 0);
+
+  Maximize.style.display = "none";
+  Restore.style.display = "block";
+});
+
+Restore.addEventListener("click", () => {
+  playerScale.setSize(playerPrev.w, playerPrev.h);
+  playerBox.style.left = playerPrev.left + "px";
+  playerBox.style.top = playerPrev.top + "px";
+  playerBox.classList.remove("maximized");
+
+  Restore.style.display = "none";
+  Maximize.style.display = "block";
+});
+const playlistMax = document.getElementById("Playlist-Maximize");
+const playlistRestore = document.getElementById("Playlist-Restore");
+let playlistPrev = null;
+
+playlistMax.addEventListener("click", () => {
+  const area = workArea();
+  playlistPrev = {
+    width: playlist.style.width,
+    height: playlist.style.height,
+    left: playlistBox.offsetLeft,
+    top: playlistBox.offsetTop,
+  };
+
+  playlistBox.classList.add("maximized");
+  playlist.style.width = area.w + "px";
+  playlist.style.height = area.h + "px";
+  moveTo(playlistBox, playlist, 0, 0);
+
+  playlistMax.style.display = "none";
+  playlistRestore.style.display = "block";
+});
+
+playlistRestore.addEventListener("click", () => {
+  playlist.style.width = playlistPrev.width;
+  playlist.style.height = playlistPrev.height;
+  playlistBox.style.left = playlistPrev.left + "px";
+  playlistBox.style.top = playlistPrev.top + "px";
+  playlistBox.classList.remove("maximized");
+
+  playlistRestore.style.display = "none";
+  playlistMax.style.display = "block";
+});
 
 //misc functions
 async function playlistShow() {
@@ -216,6 +343,9 @@ async function openWindow() {
 }
 
 function closeWindow() {
+  if (playerBox.classList.contains("maximized")) {
+    Restore.click();
+  }
   playerWindow.style.display = "none";
   taskbarSecond.style.display = "none";
   taskbarThird.style.display = "none";
@@ -384,6 +514,8 @@ songfile.addEventListener("timeupdate", () => {
 
 progressRange.addEventListener("input", function (event) {
   songfile.play();
+  pause.style.display = "";
+  play.style.display = "none";
   songfile.currentTime = (event.target.value / 100) * songfile.duration;
 });
 
