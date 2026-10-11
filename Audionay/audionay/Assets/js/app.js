@@ -85,97 +85,109 @@ function dragElement(elmnt) {
   }
 }
 //resize beta
-function makeResizable(targetEl, handleEl, minW = 300, minH = 200) {
-  handleEl.addEventListener("mousedown", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+const DIRECTIONS = ["n", "s", "e", "w", "ne", "nw", "se", "sw"];
 
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const startW = targetEl.offsetWidth;
-    const startH = targetEl.offsetHeight;
-
-    function doResize(e) {
-      targetEl.style.width =
-        Math.max(startW + (e.clientX - startX), minW) + "px";
-      targetEl.style.height =
-        Math.max(startH + (e.clientY - startY), minH) + "px";
-    }
-    function stopResize() {
-      document.removeEventListener("mousemove", doResize);
-      document.removeEventListener("mouseup", stopResize);
-    }
-
-    document.addEventListener("mousemove", doResize);
-    document.addEventListener("mouseup", stopResize);
+//dynamically adding handle elmnt
+function addEdgeHandles(windowEl) {
+  return DIRECTIONS.map((dir) => {
+    const h = document.createElement("div");
+    h.className = `edge edge-${dir}`;
+    h.dataset.dir = dir;
+    windowEl.appendChild(h);
+    console.log(`made handle ${dir}`);
+    return h;
   });
 }
 
-makeResizable(
-  document.getElementById("playlist"),
-  document.getElementById("resize-playlist"),
-);
+//get original
+function pinPosition(box) {
+  box.style.left = box.offsetLeft + "px";
+  box.style.top = box.offsetTop + "px";
+}
 
-//scalable is the new cool
+function smoveTo(box, el, x, y) {
+  box.style.left = x - el.offsetLeft + "px";
+  box.style.top = y - el.offsetTop + "px";
+}
+
+function workArea() {
+  return {
+    w: window.innerWidth,
+    h: document.querySelector(".taskbar-container").getBoundingClientRect.top,
+  };
+}
+
+function trackDrag() {
+  e.preventDefault();
+  e.stopPropagation();
+  const startX = e.clientX;
+  const startY = e.clientY;
+
+  function move(ev) {
+    onMove(ev.clientX - startX, ev.clientY - startY);
+  }
+  function stop() {
+    document.removeEventListener("mousemove", move);
+    document.removeEventListener("mouseup", stop);
+  }
+  document.addEventListener("mousemove", move);
+  document.addEventListener("mouseup", stop);
+}
+addEdgeHandles(document.getElementById("player-window")); //temp
+
+//player scale logic(not resize nono)
 function makeScalable(
+  box,
   windowEl,
-  contentEl,
-  handleEl,
+  layoutEl,
+  headerEl,
+  bodyEl,
   minScale = 0.8,
   maxScale = 3,
 ) {
-  const baseW = contentEl.offsetWidth;
-  const baseH = contentEl.offsetHeight;
+  const baseW = bodyEl.offsetWidth;
+  const baseBodyH = bodyEl.offsetHeight;
+  const headerH = headerEl.offsetHeight;
   const borderX = windowEl.offsetWidth - windowEl.clientWidth;
   const borderY = windowEl.offsetHeight - windowEl.clientHeight;
 
-  contentEl.style.width = baseW + "px";
-  contentEl.style.height = baseH + "px";
+  bodyEl.style.width = baseW + "px";
+  bodyEl.style.height = baseBodyH + "px";
+  bodyEl.style.transformOrigin = "top left";
 
-  function applyScale(s) {
-    s = Math.min(Math.max(s, minScale), maxScale);
-    contentEl.style.transform = `scale(${s})`;
-    windowEl.style.width = baseW * s + borderX + "px";
-    windowEl.style.height = baseH * s + borderY + "px";
-    return s;
-  }
   let scale = 1;
 
-  handleEl.addEventListener("mousedown", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  function setScale(s, force = false) {
+    scale = force ? s : Math.min(Math.max(s, minScale), maxScale);
+    bodyEl.style.transform = `scale(${scale})`;
+    layoutEl.style.height = headerH + baseBodyH * scale + "px";
+    windowEl.style.height = headerH + baseBodyH * scale + borderY + "px";
+    windowEl.style.width = baseW * scale + borderX + "px";
+    windowEl.style.height = headerH + baseBodyH * scale + borderY + "px";
+  }
 
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const startScale = scale;
-
-    function doScale(e) {
-      const dx = (e.clientX - startX) / baseW;
-      const dy = (e.clientY - startY) / baseH;
-      scale = applyScale(startScale + (dx + dy) / 2);
-    }
-    function stopScale(e) {
-      document.removeEventListener("mousemove", doScale);
-      document.removeEventListener("mouseup", stopScale);
-    }
-
-    document.addEventListener("mousemove", doScale);
-    document.addEventListener("mouseup", stopScale);
-  });
+  function fitScale(availW, availH) {
+    return Math.min(
+      (availW - borderX) / baseW,
+      (availH - borderY - borderY) / baseBodyH,
+    );
+  }
 }
+
+setScale(1);
+
+addEdgeHandles(windowEl).forEach((handle) => {
+  const dir = handle.dataset.dir;
+  handle.addEventListener("mousedown", (e) => {
+    pinPosition(box);
+    const startScale = scale;
+    const startW = windowEl.offsetWidth;
+  });
+});
 
 //load wait
 
-window.addEventListener("load", () => {
-  console.log("windowloaded");
-  makeScalable(
-    document.getElementById("player-window"),
-    document.querySelector("#player-window .main-layout"),
-    document.getElementById("resize-player"),
-  );
-});
 //misc functions
-
 async function playlistShow() {
   playlist.style.display = "";
 }
@@ -229,7 +241,7 @@ function updateClock() {
 
 // PLAYLIST FUNCTIONS
 const playlistItems = document.getElementById("playlist-items");
-let currentSongIndex = 0;
+let currentSongIndex = -1;
 
 function renderPlaylist() {
   playlistItems.innerHTML = "";
@@ -414,13 +426,16 @@ play.addEventListener("click", () => {
 next.addEventListener("click", () => {
   songfile.pause();
   currentSongIndex = currentSongIndex + 1;
+  if (currentSongIndex > audios.length - 1) {
+    currentSongIndex = currentSongIndex - 1;
+  }
   const song = audios[currentSongIndex];
   songfile.src = `./Assets/audiofiles/${song.url}`;
   songfile.volume = volumeRange.value / 100;
   songfile.play();
   pause.style.display = "";
   play.style.display = "none";
-  console.log("somethings");
+  console.log(`next song (index:${currentSongIndex})`);
 
   document.querySelector(".playerDetail .detailSongTitle").textContent =
     song.title;
@@ -431,13 +446,16 @@ next.addEventListener("click", () => {
 previous.addEventListener("click", () => {
   songfile.pause();
   currentSongIndex = currentSongIndex - 1;
+  if (currentSongIndex < 0) {
+    currentSongIndex = currentSongIndex + 1;
+  }
   const song = audios[currentSongIndex];
   songfile.src = `./Assets/audiofiles/${song.url}`;
   songfile.volume = volumeRange.value / 100;
   pause.style.display = "";
   play.style.display = "none";
   songfile.play();
-  console.log("somethings");
+  console.log(`previous song (index:${currentSongIndex})`);
 
   document.querySelector(".playerDetail .detailSongTitle").textContent =
     song.title;

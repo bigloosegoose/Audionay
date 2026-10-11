@@ -365,18 +365,75 @@ input[type="range"]::-ms-thumb {
   right: 1.01%;
   top: 20%;
 }
-
-.resize-handle {
+/*EDGES BELOW*/
+.edge {
   position: absolute;
-  width: 14px;
-  height: 14px;
-  right: 0;
-  bottom: 0;
-  cursor: nwse-resize;
-  z-index: 10;
+  z-index: 20;
 }
+.edge-n {
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 5px;
+  cursor: ns-resize;
+}
+.edge-s {
+  bottom: 0;
+  left: 8px;
+  right: 8px;
+  height: 5px;
+  cursor: ns-resize;
+}
+.edge-e {
+  right: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 5px;
+  cursor: ew-resize;
+}
+.edge-w {
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 5px;
+  cursor: ew-resize;
+}
+.edge-ne {
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  cursor: nesw-resize;
+}
+.edge-nw {
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  cursor: nwse-resize;
+}
+.edge-se {
+  bottom: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  cursor: nwse-resize;
+}
+.edge-sw {
+  bottom: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  cursor: nesw-resize;
+}
+
+.maximized .edge {
+  display: none;
+}
+/*EDGES ABOVE*/
 
 .audioPlayerContainer,
 .playlist {
+  box-sizing: border-box;
   overflow: hidden;
 }
