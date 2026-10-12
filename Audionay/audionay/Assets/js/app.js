@@ -27,11 +27,15 @@ const Exit = document.getElementById("Exit");
 
 const songDuration = document.getElementById("duration");
 const songprogress = document.getElementById("progress");
+const autoButton = document.getElementById("auto-btn");
+let auto = false;
 
 const volumeRange = document.getElementById("volrange");
 const progressRange = document.getElementById("progressrange");
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+let songfile = new Audio();
 
 //initialize or something
 blueTint.style.display = "none";
@@ -97,7 +101,6 @@ function addEdgeHandles(windowEl) {
     h.className = `edge edge-${dir}`;
     h.dataset.dir = dir;
     windowEl.appendChild(h);
-    console.log(`made handle ${dir}`);
     return h;
   });
 }
@@ -315,6 +318,38 @@ playlistRestore.addEventListener("click", () => {
 });
 
 //misc functions
+autoButton.addEventListener("click", () => {
+  if (auto) {
+    auto = false;
+    autoButton.style.filter = "none";
+    console.log("auto off");
+  } else {
+    auto = true;
+    if (loopOn) toggleLoop();
+    autoButton.style.filter = "invert()";
+    console.log("auto on");
+  }
+});
+
+let playing = false;
+function togglePlay() {
+  if (songfile) {
+    if (playing == false) {
+      songfile.play();
+      pause.style.display = "";
+      play.style.display = "none";
+      playing = true;
+    } else {
+      if (playing) {
+        songfile.pause();
+        pause.style.display = "none";
+        play.style.display = "";
+        playing = false;
+      }
+    }
+  }
+}
+
 async function playlistShow() {
   playlist.style.display = "";
 }
@@ -398,8 +433,6 @@ function renderPlaylist() {
   });
 }
 
-let songfile = new Audio();
-
 function playSong(index) {
   currentSongIndex = index;
   const song = audios[index];
@@ -409,11 +442,10 @@ function playSong(index) {
   document.querySelector(".playerDetail .detailSongArtist").textContent =
     song.artist;
   songfile.pause();
-  songfile.src = `./Assets/audiofiles/${song.url}`;
+  songfile.src = songSrc(song);
   songfile.volume = volumeRange.value / 100;
-  songfile.play();
-  pause.style.display = "";
-  play.style.display = "none";
+  playing = false;
+  togglePlay();
 
   console.log("something should be playing");
 }
@@ -513,10 +545,79 @@ songfile.addEventListener("timeupdate", () => {
 });
 
 progressRange.addEventListener("input", function (event) {
-  songfile.play();
-  pause.style.display = "";
-  play.style.display = "none";
   songfile.currentTime = (event.target.value / 100) * songfile.duration;
+});
+//song add funcs
+function songSrc(song) {
+  return song.src || `./Assets/audiofiles/${song.url}`;
+}
+
+const dbPromise = new Promise((resolve, reject) => {
+  const req = indexedDB.open("audionay", 1);
+  req.onupgradeneeded = () =>
+    req.result.createObjectStore("songs", { keyPath: "id" });
+  req.onsuccess = () => resolve(req.result);
+  req.onerror = () => reject(req.error);
+});
+
+async function dbSave(record) {
+  const db = await dbPromise;
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("songs", "readwrite");
+    tx.objectStore("songs").put(record);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function dbLoadAll() {
+  const db = await dbPromise;
+  return new Promise((resolve, reject) => {
+    const req = db.transaction("songs").objectStore("songs").getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function loadSavedSongs() {
+  const saved = await dbLoadAll();
+  saved.forEach((rec) => {
+    audios.push({
+      id: rec.id,
+      title: rec.title,
+      artist: rec.artist,
+      src: URL.createObjectURL(rec.file),
+      thumbnail: "",
+    });
+  });
+  renderPlaylist();
+}
+loadSavedSongs();
+
+const songInput = document.getElementById("song-input");
+const addSongsBtn = document.getElementById("add-song-btn");
+
+addSongsBtn.addEventListener("click", () => songInput.click());
+
+songInput.addEventListener("change", async () => {
+  for (const file of songInput.files) {
+    const name = file.name.replace(/\.[^/.]+$/, ""); // strip the extension
+    const [artist, title] = name.includes(" - ")
+      ? name.split(" - ")
+      : ["Unknown artist", name];
+    const id = crypto.randomUUID();
+
+    audios.push({
+      id,
+      title,
+      artist,
+      src: URL.createObjectURL(file),
+      thumbnail: "",
+    });
+    await dbSave({ id, title, artist, file });
+  }
+  songInput.value = "";
+  renderPlaylist();
 });
 
 //player functions
@@ -530,6 +631,8 @@ function toggleLoop() {
     loopOn = true;
     loop.style.filter = "invert()";
     console.log("looping");
+    auto = false;
+    autoButton.style.filter = "none";
   }
 }
 
@@ -538,35 +641,47 @@ songfile.addEventListener("ended", () => {
   if (loopOn) {
     songfile.play();
   }
+  if (auto) {
+    playing = true;
+    togglePlay();
+    currentSongIndex = currentSongIndex + 1;
+    if (currentSongIndex > audios.length - 1) {
+      currentSongIndex = currentSongIndex - 1;
+    }
+    const song = audios[currentSongIndex];
+    songfile.src = songSrc(song);
+    songfile.volume = volumeRange.value / 100;
+    togglePlay();
+    console.log(`next song (index:${currentSongIndex})`);
+
+    document.querySelector(".playerDetail .detailSongTitle").textContent =
+      song.title;
+    document.querySelector(".playerDetail .detailSongArtist").textContent =
+      song.artist;
+  }
 });
 
 loop.addEventListener("click", () => {
   toggleLoop();
 });
 pause.addEventListener("click", () => {
-  songfile.pause();
-  console.log("pause");
-  pause.style.display = "none";
-  play.style.display = "";
+  togglePlay();
 });
 play.addEventListener("click", () => {
-  songfile.play();
   console.log("play");
-  pause.style.display = "";
-  play.style.display = "none";
+  togglePlay();
 });
 next.addEventListener("click", () => {
-  songfile.pause();
+  playing = true;
+  togglePlay();
   currentSongIndex = currentSongIndex + 1;
   if (currentSongIndex > audios.length - 1) {
     currentSongIndex = currentSongIndex - 1;
   }
   const song = audios[currentSongIndex];
-  songfile.src = `./Assets/audiofiles/${song.url}`;
+  songfile.src = songSrc(song);
   songfile.volume = volumeRange.value / 100;
-  songfile.play();
-  pause.style.display = "";
-  play.style.display = "none";
+  togglePlay();
   console.log(`next song (index:${currentSongIndex})`);
 
   document.querySelector(".playerDetail .detailSongTitle").textContent =
@@ -576,17 +691,16 @@ next.addEventListener("click", () => {
 });
 
 previous.addEventListener("click", () => {
-  songfile.pause();
+  playing = true;
+  togglePlay();
   currentSongIndex = currentSongIndex - 1;
   if (currentSongIndex < 0) {
     currentSongIndex = currentSongIndex + 1;
   }
   const song = audios[currentSongIndex];
-  songfile.src = `./Assets/audiofiles/${song.url}`;
+  songfile.src = songSrc(song);
   songfile.volume = volumeRange.value / 100;
-  pause.style.display = "";
-  play.style.display = "none";
-  songfile.play();
+  togglePlay();
   console.log(`previous song (index:${currentSongIndex})`);
 
   document.querySelector(".playerDetail .detailSongTitle").textContent =
