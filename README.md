@@ -1,2 +1,2 @@
 # Audionay
-Basically a player with some dsp effects
+Basically a player , retro aesthetic kinda sorta
