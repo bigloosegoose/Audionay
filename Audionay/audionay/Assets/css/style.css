@@ -331,7 +331,7 @@ input[type="range"]::-ms-thumb {
 
 .playlist-detail {
   outline: 1px solid white;
-  display: grid;
+  display: flex;
   grid-template-columns: auto 1fr;
   align-items: center;
   min-height: 60px;
@@ -458,4 +458,24 @@ input[type="range"]::-ms-thumb {
 .playlist {
   box-sizing: border-box;
   overflow: hidden;
+}
+
+.playerDetail .detailSongInfo {
+  flex: 1;
+}
+
+.remove-btns:hover {
+  filter: invert();
+}
+
+.remove-btns {
+  width: 16px;
+  height: 16px;
+  margin: 0 10px 0 auto;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.remove-btns:active {
+  transform: scale(0.9);
 }

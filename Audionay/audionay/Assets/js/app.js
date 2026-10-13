@@ -423,15 +423,22 @@ function renderPlaylist() {
     <div class="detailSongTitle">${song.title}</div>
     <div class="detailSongArtist">${song.artist}</div>
     </div>
+    <img src="./Assets/img/btkcross.svg" class="remove-btns" draggable="false" alt="remove"/>
     `;
 
     item.addEventListener("click", () => {
       playSong(index);
     });
+    item.querySelector(".remove-btns").addEventListener("click", (e) => {
+      e.stopPropagation();
+      removeSong(index);
+    });
 
     playlistItems.appendChild(item);
   });
 }
+
+function removeSong(index) {}
 
 function playSong(index) {
   currentSongIndex = index;
@@ -568,7 +575,28 @@ async function dbSave(record) {
     tx.oncomplete = resolve;
     tx.onerror = () => reject(tx.error);
   });
+
+  async function dbRemove(id) {
+    const db = await dbPromise;
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction("songs", "readwrite");
+      tx.objectStore("songs").delete(id);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  }
 }
+
+//hiding default songs
+function getHiddenIds() {
+  return JSON.parse(localStorage.getItem("audionay-hidden") || "[]");
+}
+function hideBuiltIn(id) {
+  const hidden = getHiddenIds();
+  hidden.push(id);
+  localStorage.setItem("audionay-hidden", JSON.stringify(hidden));
+}
+audios = audios.filter((song) => !getHiddenIds().includes(song.id));
 
 async function dbLoadAll() {
   const db = await dbPromise;
@@ -601,7 +629,7 @@ addSongsBtn.addEventListener("click", () => songInput.click());
 
 songInput.addEventListener("change", async () => {
   for (const file of songInput.files) {
-    const name = file.name.replace(/\.[^/.]+$/, ""); // strip the extension
+    const name = file.name.replace(/\.[^/.]+$/, "");
     const [artist, title] = name.includes(" - ")
       ? name.split(" - ")
       : ["Unknown artist", name];
@@ -621,6 +649,23 @@ songInput.addEventListener("change", async () => {
 });
 
 //player functions
+function changeTrack(a) {
+  playing = true;
+  togglePlay();
+  currentSongIndex = currentSongIndex + a;
+  if (currentSongIndex < 0) {
+    currentSongIndex = currentSongIndex - a;
+  }
+  const song = audios[currentSongIndex];
+  songfile.src = songSrc(song);
+  songfile.volume = volumeRange.value / 100;
+  togglePlay();
+  document.querySelector(".playerDetail .detailSongTitle").textContent =
+    song.title;
+  document.querySelector(".playerDetail .detailSongArtist").textContent =
+    song.artist;
+}
+
 let loopOn = false;
 function toggleLoop() {
   if (loopOn) {
@@ -642,22 +687,7 @@ songfile.addEventListener("ended", () => {
     songfile.play();
   }
   if (auto) {
-    playing = true;
-    togglePlay();
-    currentSongIndex = currentSongIndex + 1;
-    if (currentSongIndex > audios.length - 1) {
-      currentSongIndex = currentSongIndex - 1;
-    }
-    const song = audios[currentSongIndex];
-    songfile.src = songSrc(song);
-    songfile.volume = volumeRange.value / 100;
-    togglePlay();
-    console.log(`next song (index:${currentSongIndex})`);
-
-    document.querySelector(".playerDetail .detailSongTitle").textContent =
-      song.title;
-    document.querySelector(".playerDetail .detailSongArtist").textContent =
-      song.artist;
+    changeTrack(1);
   }
 });
 
@@ -672,39 +702,9 @@ play.addEventListener("click", () => {
   togglePlay();
 });
 next.addEventListener("click", () => {
-  playing = true;
-  togglePlay();
-  currentSongIndex = currentSongIndex + 1;
-  if (currentSongIndex > audios.length - 1) {
-    currentSongIndex = currentSongIndex - 1;
-  }
-  const song = audios[currentSongIndex];
-  songfile.src = songSrc(song);
-  songfile.volume = volumeRange.value / 100;
-  togglePlay();
-  console.log(`next song (index:${currentSongIndex})`);
-
-  document.querySelector(".playerDetail .detailSongTitle").textContent =
-    song.title;
-  document.querySelector(".playerDetail .detailSongArtist").textContent =
-    song.artist;
+  changeTrack(1);
 });
 
 previous.addEventListener("click", () => {
-  playing = true;
-  togglePlay();
-  currentSongIndex = currentSongIndex - 1;
-  if (currentSongIndex < 0) {
-    currentSongIndex = currentSongIndex + 1;
-  }
-  const song = audios[currentSongIndex];
-  songfile.src = songSrc(song);
-  songfile.volume = volumeRange.value / 100;
-  togglePlay();
-  console.log(`previous song (index:${currentSongIndex})`);
-
-  document.querySelector(".playerDetail .detailSongTitle").textContent =
-    song.title;
-  document.querySelector(".playerDetail .detailSongArtist").textContent =
-    song.artist;
+  changeTrack(-1);
 });
