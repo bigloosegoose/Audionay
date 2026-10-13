@@ -438,7 +438,38 @@ function renderPlaylist() {
   });
 }
 
-function removeSong(index) {}
+async function removeSong(index) {
+  const song = audios[index];
+
+  if (song.src) {
+    await dbRemove(song.id);
+    URL.revokeObjectURL(song.src);
+  } else {
+    hideBuiltIn(song.id);
+  }
+
+  audios.splice(index, 1);
+
+  if (index < currentSongIndex) {
+    currentSongIndex--;
+  } else if (index === currentSongIndex) {
+    songfile.pause();
+    songfile.removeAttribute("src");
+    songfile.load();
+    playing = false;
+    pause.style.display = "none";
+    play.style.display = "";
+    currentSongIndex = -1;
+
+    document.querySelector(".playerDetail .detailSongTitle").textContent =
+      "no song selected";
+    document.querySelector(".playerDetail .detailSongArtist").textContent =
+      "unknown artist";
+    document.getElementById("progress").textContent = "0:00";
+    document.getElementById("duration").textContent = "0:00";
+  }
+  renderPlaylist();
+}
 
 function playSong(index) {
   currentSongIndex = index;
@@ -575,16 +606,6 @@ async function dbSave(record) {
     tx.oncomplete = resolve;
     tx.onerror = () => reject(tx.error);
   });
-
-  async function dbRemove(id) {
-    const db = await dbPromise;
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction("songs", "readwrite");
-      tx.objectStore("songs").delete(id);
-      tx.oncomplete = resolve;
-      tx.onerror = () => reject(tx.error);
-    });
-  }
 }
 
 //hiding default songs
@@ -607,8 +628,19 @@ async function dbLoadAll() {
   });
 }
 
+async function dbRemove(id) {
+  const db = await dbPromise;
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("songs", "readwrite");
+    tx.objectStore("songs").delete(id);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
 async function loadSavedSongs() {
   const saved = await dbLoadAll();
+  saved.sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0));
   saved.forEach((rec) => {
     audios.push({
       id: rec.id,
@@ -618,6 +650,11 @@ async function loadSavedSongs() {
       thumbnail: "",
     });
   });
+  if (audios.length > 12) {
+    playlist.style.overflow = "scroll";
+  } else {
+    playlist.style.overflow = "none";
+  }
   renderPlaylist();
 }
 loadSavedSongs();
@@ -628,7 +665,7 @@ const addSongsBtn = document.getElementById("add-song-btn");
 addSongsBtn.addEventListener("click", () => songInput.click());
 
 songInput.addEventListener("change", async () => {
-  for (const file of songInput.files) {
+  for (const [i, file] of [...songInput.files].entries()) {
     const name = file.name.replace(/\.[^/.]+$/, "");
     const [artist, title] = name.includes(" - ")
       ? name.split(" - ")
@@ -642,7 +679,7 @@ songInput.addEventListener("change", async () => {
       src: URL.createObjectURL(file),
       thumbnail: "",
     });
-    await dbSave({ id, title, artist, file });
+    await dbSave({ id, title, artist, file, addedAt: Date.now() + i });
   }
   songInput.value = "";
   renderPlaylist();
