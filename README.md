@@ -18,4 +18,4 @@ This is a web player you can use to add your songs and listen to without having 
 
 - An Equaliser
 
-![the current UI](ss\ss1.png)
+![the current UI](ss/ss1.png)
